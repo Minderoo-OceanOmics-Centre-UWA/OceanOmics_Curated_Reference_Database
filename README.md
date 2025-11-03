@@ -3,62 +3,40 @@ The merger of all of our current mitogenome databases. This is for internal use 
 
 # Commands to build
 
-```
-find . -name '*mt.fa' -exec cat {} \; > all_tranche1_NBDL.mt.fasta
-# replaced double spaces by single spaces in vim
+# NBDL
 
-# remove one mislabeled species until we figure out what it is
-seqkit grep -v -p NBDL-HK3T1ZWHHNEZW8.v1.mt all_tranche1_NBDL.mt.fasta > all_tranche1_NBDL.mt.noMislabel.fasta
+We now keep sequences without NCBI taxonomy IDs.
+
+```
+# in different folders:
+find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche1_NBDL.mt.fasta
+find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche2_NBDL.mt.fasta
+find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche3_NBDL.mt.fasta
+
+cat  all_tranche1_NBDL.mt.fasta all_tranche2_NBDL.mt.fasta all_tranche3_NBDL.mt.fasta > all_tranche123_NBDL.mt.fasta
 
 # fix the french etc. spellings, blast doesn't like those
-iconv -f utf-8 -t ascii//translit all_tranche1_NBDL.mt.noMislabel.fasta > ba
-mv ba all_tranche1_NBDL.mt.noMislabel.fasta
+iconv -f utf-8 -t ascii//translit all_tranche123_NBDL.mt.fasta > ba
+mv ba all_tranche123_NBDL.mt.fasta
 
-# get the taxids
-python getTaxonomyIDs.py
-
-# remove sequences without taxids
-grep -P '\t[0-9]' all_tranche1_NBDL.mt.noMislabel.taxids.txt > all_tranche1_NBDL.mt.noMislabel.taxids.with_taxids.txt
-seqkit grep  -f <(cut -f 1 all_tranche1_NBDL.mt.noMislabel.taxids.with_taxids.txt) all_tranche1_NBDL.mt.noMislabel.fasta > all_tranche1_NBDL.mt.noMislabel.with_taxids.fasta
-grep -P '\t[0-9]' all_tranche1_NBDL.mt.noMislabel.taxids.txt > all_tranche1_NBDL.mt.noMislabel.taxids.with_taxids.taxids.txt
-
-```
-
-And the same for tranche2, just without the removal
-
-```
-find . -name '*mt.fa' -exec cat {} \; > all_tranche2_NBDL.mt.fasta
-# replaced double spaces by single spaces in vim
-
-# fix the french etc. spellings, blast doesn't like those
-iconv -f utf-8 -t ascii//translit all_tranche2_NBDL.mt.fasta > ba
-mv ba all_tranche2_NBDL.mt.fasta
-
-# get the taxids
-python getTaxonomyIDs.py
-
-# remove sequences without taxids
-grep -P '\t[0-9]' all_tranche2_NBDL.mt.taxids.txt > all_tranche2_NBDL.mt.taxids.with_taxids.txt
-seqkit grep  -f <(cut -f 1 all_tranche2_NBDL.mt.taxids.with_taxids.txt) all_tranche2_NBDL.mt.fasta > all_tranche2_NBDL.mt.with_taxids.fasta
-grep -P '\t[0-9]' all_tranche2_NBDL.mt.taxids.txt > all_tranche2_NBDL.mt.taxids.with_taxids.taxids.txt
-```
-
-
-Remove 5% potential mislabels
-
-```
-cat all_tranche1_NBDL.mt.noMislabel.with_taxids.fasta all_tranche2_NBDL.mt.with_taxids.fasta > all_tranche12_NBDL.mt.with_taxids.fasta
-cat all_tranche1_NBDL.mt.noMislabel.taxids.with_taxids.taxids.txt all_tranche2_NBDL.mt.taxids.with_taxids.taxids.txt > all_tranche12_NBDL.mt.with_taxids.taxids.txt
+# remove mislabels based on NBDL assessment - see RProject NBDL_Data_Cleaning
+# script also renames two mislabels
+# see keepUs.txt
 
 python removeMislabeledNBDL.py
+
+# get NDBI Taxonomy IDs
+
+cat all_tranche123_NBDL.mt.noMislabels.ids_species.txt | taxonkit name2taxid -i 2 | cut -f 1,3 > all_tranche123_NBDL.mt.noMislabels.ids_species.forBlast.txt
+
 ```
 
-Now we have two files: all_tranche12_NBDL.mt.with_taxids.noMislabels.fasta and  all_tranche12_NBDL.mt.with_taxids.taxids.noMislabels.txt
+Now we have two files: all_tranche123_NBDL.mt.noMislabels.fasta and all_tranche123_NBDL.mt.noMislabels.ids_species.forBlast.txt 
 
 
 # Filtering BOLD
 
-1. Download Chordata FASTA from https://boldsystems.org/index.php/Public_BINSearch?query=Chordata
+1. Download Chordata FASTA from https://v4.boldsystems.org/index.php/Public_BINSearch?query=Chordata
 2. Use taxonkit to pull out families:
     grep '>' BOLD_Chordata.fas | sed  's/|/\t/g' | cut -f 1,2 | taxonkit name2taxid -i 2 | taxonkit lineage -i 3 | taxonkit reformat -i 4 > BOLD_Chordata.taxids.txt
 3. Gzip the thing:
@@ -70,10 +48,16 @@ Now we have two files: all_tranche12_NBDL.mt.with_taxids.noMislabels.fasta and  
 6. run the QC script:
     python doAllQC.py
 
+# Download the Ocean Genomes mitogenomes
+
+aws s3 cp --recursive s3://oceanomics/OceanGenomes/analysed-data/mitogenomes/ .
+
+cat *fa *fasta > AllOcGen_mitogenomes.fasta
+
 # All together
 
 ```
-cat OceanGenomes_Mitodatabase.fasta 12S.16S.COI.Mitogenomes.fasta all_tranche12_NBDL.mt.with_taxids.noMislabels.fasta 3-Final/Final_database.fasta > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta
+cat AllOcGen_mitogenomes.fasta 12S.16S.COI.Mitogenomes.fasta all_tranche123_NBDL.mt.noMislabels.fasta 3-Final/Final_database.fasta > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta
 cat OceanGenomes_Mitodatabase.taxids.tsv 12S.16S.COI.Mitogenomes.taxids.txt all_tranche12_NBDL.mt.with_taxids.taxids.noMislabels.txt 3-Final/Final_database_taxids.txt > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids
 
 makeblastdb -dbtype nucl -in OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta -parse_seqids -taxid_map OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids
