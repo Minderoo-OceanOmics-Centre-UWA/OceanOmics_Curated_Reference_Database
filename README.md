@@ -2,11 +2,11 @@
 
 This is the OceanOmics curated reference database.
 
-The main file is `OceanGenomes.CuratedNT.NBDLTranche1and2and3.CuratedBOLD.fasta`.
+The main file is `OceanGenomes.CuratedNT.NBDLTranche1and2and3.CuratedBOLD.fasta.gz`.
 
 It contains:
 
-- NBDL fish mitogenomes, the latest release
+- NBDL fish mitogenomes, the first release (14/11/2025)
 - UWA OceanOmics Centre/ Ocean Genomes fish mitogenome assemblies
 - BOLD, Australian fish families
 - NCBI GenBank 12S, 16S, COI, for Australian fish families. See https://github.com/Minderoo-OceanOmics-Centre-UWA/Minderoo_Foundation-OceanOmics-AmpliconReference for that one.
