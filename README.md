@@ -1,5 +1,15 @@
 # Internal_AmpliconReference
-The merger of all of our current mitogenome databases. This is for internal use ONLY.
+
+This is the OceanOmics curated reference database.
+
+It contains:
+
+- NBDL fish mitogenomes, the latest release
+- UWA OceanOmics Centre/ Ocean Genomes fish mitogenome assemblies
+- BOLD, Australian fish families
+- NCBI GenBank 12S, 16S, COI, for Australian fish families
+
+We curate GenBank and BOLD by clustering sequences - in a nutshell, self-blast, then calculate the LCA for each sequence, then identify sequences leading to very high-level LCAs, then removing those sequences. See doAllQC.py
 
 # Commands to build
 
