@@ -9,7 +9,7 @@ It contains:
 - NBDL fish mitogenomes, the latest release
 - UWA OceanOmics Centre/ Ocean Genomes fish mitogenome assemblies
 - BOLD, Australian fish families
-- NCBI GenBank 12S, 16S, COI, for Australian fish families
+- NCBI GenBank 12S, 16S, COI, for Australian fish families. See https://github.com/Minderoo-OceanOmics-Centre-UWA/Minderoo_Foundation-OceanOmics-AmpliconReference for that one.
 
 We curate GenBank and BOLD by clustering sequences - in a nutshell, self-blast, then calculate the LCA for each sequence, then identify sequences leading to very high-level LCAs, then removing those sequences. See doAllQC.py
 
