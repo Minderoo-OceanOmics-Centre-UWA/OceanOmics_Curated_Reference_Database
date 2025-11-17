@@ -1,4 +1,4 @@
-# Internal_AmpliconReference
+# OceanOmics Curated Reference Database
 
 This is the OceanOmics curated reference database.
 
