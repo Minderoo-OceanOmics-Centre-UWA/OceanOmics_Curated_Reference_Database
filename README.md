@@ -17,33 +17,19 @@ We curate GenBank and BOLD by clustering sequences - in a nutshell, self-blast, 
 
 # NBDL
 
-We now keep sequences without NCBI taxonomy IDs.
+We keep sequences without NCBI taxonomy IDs.
 
 ```
-# in different folders:
-find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche1_NBDL.mt.fasta
-find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche2_NBDL.mt.fasta
-find . -name '*mt.fa' -exec cat {} \; | sed 's/  / /g' > all_tranche3_NBDL.mt.fasta
+# download all mitogenomes from https://nbdl.csiro.au/my-downloads
 
-cat  all_tranche1_NBDL.mt.fasta all_tranche2_NBDL.mt.fasta all_tranche3_NBDL.mt.fasta > all_tranche123_NBDL.mt.fasta
+# unzip and concatenate
+cat NBDL*fa > all_nbdl.fa
 
 # fix the french etc. spellings, blast doesn't like those
-iconv -f utf-8 -t ascii//translit all_tranche123_NBDL.mt.fasta > ba
-mv ba all_tranche123_NBDL.mt.fasta
-
-# remove mislabels based on NBDL assessment - see RProject NBDL_Data_Cleaning
-# script also renames two mislabels
-# see keepUs.txt
-
-python removeMislabeledNBDL.py
-
-# get NDBI Taxonomy IDs
-
-cat all_tranche123_NBDL.mt.noMislabels.ids_species.txt | taxonkit name2taxid -i 2 | cut -f 1,3 > all_tranche123_NBDL.mt.noMislabels.ids_species.forBlast.txt
+iconv -f utf-8 -t ascii//translit all_nbdl.fa > ba
+mv ba all_nbdl.fa
 
 ```
-
-Now we have two files: all_tranche123_NBDL.mt.noMislabels.fasta and all_tranche123_NBDL.mt.noMislabels.ids_species.forBlast.txt 
 
 
 # Filtering BOLD
@@ -69,17 +55,8 @@ cat *fa *fasta > AllOcGen_mitogenomes.fasta
 # All together
 
 ```
-cat AllOcGen_mitogenomes.fasta 12S.16S.COI.Mitogenomes.fasta all_tranche123_NBDL.mt.noMislabels.fasta 3-Final/Final_database.fasta > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta
+cat AllOcGen_mitogenomes.fasta 12S.16S.COI.Mitogenomes.fasta all_nbdl.fa 3-Final/Final_database.fasta > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta
 cat OceanGenomes_Mitodatabase.taxids.tsv 12S.16S.COI.Mitogenomes.taxids.txt all_tranche12_NBDL.mt.with_taxids.taxids.noMislabels.txt 3-Final/Final_database_taxids.txt > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids
 
 makeblastdb -dbtype nucl -in OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.fasta -parse_seqids -taxid_map OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids
 ```
-
-# Make stats for downstream QC
-
-```
-cat OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids | taxonkit lineage -i 2 | taxonkit reformat -i 3 > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids.taxonkit
-python makeStats.py > OceanGenomes.CuratedNT.NBDLTranche1and2.CuratedBOLD.taxids.taxonkit.stats
-```
-
-
