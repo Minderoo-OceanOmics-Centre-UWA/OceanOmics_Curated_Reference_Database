@@ -2,7 +2,7 @@
 
 This is the OceanOmics curated reference database.
 
-The main file is `OceanGenomes.CuratedNT.NBDLTranche1and2and3.CuratedBOLD.fasta.gz`.
+The main file is `OceanGenomes.CuratedNT.withNBDL.CuratedBOLD.fasta.gz`.
 
 It contains:
 
